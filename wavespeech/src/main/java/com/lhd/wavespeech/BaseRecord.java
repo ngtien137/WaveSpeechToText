@@ -35,10 +35,15 @@ public class BaseRecord {
     private ProgressRecord recordProgress;
     private long rawLength = 0;
 
+    private boolean keepOutput = true;
+
+    public void setKeepOutput(boolean keepOutput) {
+        this.keepOutput = keepOutput;
+    }
+
     public void setRecordProgress(ProgressRecord recordProgress) {
         this.recordProgress = recordProgress;
     }
-
 
     public void setAudioDataListener(AudioDataReceivedListener mListener) {
         this.mListener = mListener;
@@ -82,9 +87,15 @@ public class BaseRecord {
                 audioRecordThread.interrupt();
                 audioRecordThread = null;
             }
-            File waveFile = getFile(fileName, "wav");
-            rawToWave(mRecording, waveFile);
-            return waveFile.getAbsolutePath();
+            if (keepOutput) {
+                File waveFile = getFile(fileName, "wav");
+                rawToWave(mRecording, waveFile);
+                return waveFile.getAbsolutePath();
+            } else {
+                File waveFile = getFile(fileName, "raw");
+                waveFile.deleteOnExit();
+                return "";
+            }
         } catch (Exception e) {
             Log.e("Error saving file : ", e.getMessage());
         }
@@ -121,7 +132,7 @@ public class BaseRecord {
         @Override
         public void run() {
             if (mIsRecording && !isPause) {
-                currentMilis = (int)(getCurrentAudioDurationFromRawLength() * 1000);
+                currentMilis = (int) (getCurrentAudioDurationFromRawLength() * 1000);
                 if (recordProgress != null) recordProgress.onRecordProgress(currentMilis);
             }
         }
@@ -241,7 +252,7 @@ public class BaseRecord {
     float getCurrentAudioDurationFromRawLength() {
         int channel = 1;
         int bitsPerSample = 16;
-        return (float)(this.rawLength) / ((float)(SAMPLE_RATE * channel * bitsPerSample) / 8);
+        return (float) (this.rawLength) / ((float) (SAMPLE_RATE * channel * bitsPerSample) / 8);
     }
 
     private File getFile(final String fileName, final String suffix) {

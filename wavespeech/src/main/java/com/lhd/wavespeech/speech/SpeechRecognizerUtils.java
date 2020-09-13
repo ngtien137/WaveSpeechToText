@@ -8,7 +8,10 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
+import com.lhd.wavespeech.AudioDataReceivedListener;
+import com.lhd.wavespeech.BaseRecord;
 import com.lhd.wavespeech.views.WaveRecordView;
+import com.lhd.wavespeech.views.WaveSpeechView;
 
 import java.util.List;
 
@@ -16,11 +19,24 @@ import static com.lhd.wavespeech.CustomViewSupport.loge;
 
 public class SpeechRecognizerUtils {
 
+    private final static String TEMP_SPEECH_FILE_NAME = "Temp_Speech";
+
     private Context context;
     private SpeechRecognizer mSpeechRecognizer;
     private Intent mIntentSpeech;
     private boolean isSupported = false;
+    private WaveSpeechView waveSpeechView;
+    private boolean isListeningSpeech;
+    private BaseRecord baseRecord;
     private WaveRecordView waveRecordView;
+    private AudioDataReceivedListener audioDataReceivedListener = new AudioDataReceivedListener() {
+        @Override
+        public void onAudioDataReceived(short[] data) {
+            if (waveRecordView != null) {
+                waveRecordView.setSamples(data);
+            }
+        }
+    };
     private RecognitionListener listener = new RecognitionListener() {
         @Override
         public void onReadyForSpeech(Bundle bundle) {
@@ -29,12 +45,24 @@ public class SpeechRecognizerUtils {
 
         @Override
         public void onBeginningOfSpeech() {
+            isListeningSpeech = true;
             loge("Speech Begin");
+            if (waveRecordView != null) {
+                if (baseRecord == null) {
+                    baseRecord = new BaseRecord();
+                    baseRecord.setKeepOutput(false);
+                    baseRecord.setAudioDataListener(audioDataReceivedListener);
+                }
+                baseRecord.start(context.getExternalCacheDir().getAbsolutePath(), TEMP_SPEECH_FILE_NAME);
+            }
         }
 
         @Override
         public void onRmsChanged(float v) {
             loge("Speech onRmsChanged: ", v);
+            if (waveSpeechView != null && isListeningSpeech) {
+                waveSpeechView.setValue(v + 10);
+            }
         }
 
         @Override
@@ -44,7 +72,14 @@ public class SpeechRecognizerUtils {
 
         @Override
         public void onEndOfSpeech() {
+            isListeningSpeech = false;
             loge("Speech End");
+            if (waveSpeechView != null) {
+                waveSpeechView.reset();
+            }
+            if (waveRecordView != null && baseRecord != null) {
+                baseRecord.stop(TEMP_SPEECH_FILE_NAME);
+            }
         }
 
         @Override
@@ -101,13 +136,18 @@ public class SpeechRecognizerUtils {
         return value != null;
     }
 
-    public void setWaveRecordView(WaveRecordView waveRecordView) {
+    public void setWaveView(WaveSpeechView waveSpeechView) {
+        this.waveSpeechView = waveSpeechView;
+    }
+
+    public void setWaveView(WaveRecordView waveRecordView) {
         this.waveRecordView = waveRecordView;
     }
 
     public void startListening() {
         if (mSpeechRecognizer != null && mIntentSpeech != null) {
-            mSpeechRecognizer.startListening(mIntentSpeech);
+            if (!isListeningSpeech)
+                mSpeechRecognizer.startListening(mIntentSpeech);
         }
     }
 
@@ -126,6 +166,18 @@ public class SpeechRecognizerUtils {
             default:
                 loge("Speech Error", error);
                 break;
+        }
+    }
+
+    public void cancelListener() {
+        if (isListeningSpeech) {
+            if (mSpeechRecognizer != null) {
+                mSpeechRecognizer.cancel();
+                mSpeechRecognizer.destroy();
+            }
+            if (baseRecord != null) {
+                baseRecord.release();
+            }
         }
     }
 }

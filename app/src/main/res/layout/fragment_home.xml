@@ -23,11 +23,11 @@
             android:hint="@string/content"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            app:layout_constraintBottom_toTopOf="@id/waveRecordView"
+            app:layout_constraintBottom_toTopOf="@id/waveView"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <com.lhd.wavespeech.views.WaveRecordView
-            android:id="@+id/waveRecordView"
+        <com.lhd.wavespeech.views.WaveSpeechView
+            android:id="@+id/waveView"
             android:layout_width="match_parent"
             android:layout_height="90dp"
             app:layout_constraintBottom_toTopOf="@id/btnTalk"
@@ -35,8 +35,21 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvMain"
-            app:mode="RECORDING"
-            app:waveformColor="#c8c8c8" />
+            app:ws_waveColor="#c8c8c8"
+            app:ws_wavePadding="2dp"
+            app:ws_waveValue="0" />
+
+<!--        <com.lhd.wavespeech.views.WaveRecordView-->
+        <!--            android:id="@+id/waveView"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="90dp"-->
+        <!--            app:layout_constraintBottom_toTopOf="@id/btnTalk"-->
+        <!--            app:layout_constraintEnd_toEndOf="parent"-->
+        <!--            app:layout_constraintHorizontal_bias="0.0"-->
+        <!--            app:layout_constraintStart_toStartOf="parent"-->
+        <!--            app:layout_constraintTop_toBottomOf="@+id/tvMain"-->
+        <!--            app:mode="RECORDING"-->
+        <!--            app:waveformColor="#c8c8c8" />-->
 
         <Button
             android:id="@+id/btnTalk"
@@ -48,7 +61,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/waveRecordView" />
+            app:layout_constraintTop_toBottomOf="@id/waveView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

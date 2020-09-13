@@ -12,4 +12,14 @@
         <attr name="timecodeColor" format="color" />
     </declare-styleable>
 
+    <declare-styleable name="WaveSpeechView">
+        <attr name="ws_waveColor" format="color" />
+        <attr name="ws_waveWidth" format="dimension" />
+        <attr name="ws_waveHeight" format="dimension" />
+        <attr name="ws_wavePadding" format="dimension" />
+        <attr name="ws_waveMaxValue" format="float" />
+        <attr name="ws_waveValue" format="float" />
+        <attr name="ws_waveAreaCount" format="integer" />
+    </declare-styleable>
+
 </resources>

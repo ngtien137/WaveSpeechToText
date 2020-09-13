@@ -19,7 +19,7 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>() {
     }
 
     override fun initView() {
-
+        speechRecognizerUtils.setWaveView(binding.waveView)
     }
 
     override fun onViewClick(vId: Int) {
