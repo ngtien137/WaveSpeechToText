@@ -20,6 +20,7 @@
         <attr name="ws_waveMaxValue" format="float" />
         <attr name="ws_waveValue" format="float" />
         <attr name="ws_waveAreaCount" format="integer" />
+        <attr name="ws_showNoThingIfZeroValue" format="boolean" />
     </declare-styleable>
 
 </resources>

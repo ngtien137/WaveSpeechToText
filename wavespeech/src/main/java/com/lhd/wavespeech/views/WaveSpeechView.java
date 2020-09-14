@@ -9,14 +9,15 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.lhd.wavespeech.BaseRecord;
 import com.lhd.wavespeech.R;
 
-import static com.lhd.wavespeech.CustomViewSupport.loge;
+import kotlin.jvm.Synchronized;
 
 public class WaveSpeechView extends View {
 
@@ -28,6 +29,7 @@ public class WaveSpeechView extends View {
     private float maxValue = MAX_VALUE_DEFAULT;
     private float currentValue = 0;
     private float lastValue = 0;
+    private boolean showNothingIfZeroValue = true;
 
     private float wavePadding;
     private float waveHeight;
@@ -35,6 +37,8 @@ public class WaveSpeechView extends View {
     private int waveCount = 0;
     //Số vùng sóng
     private int waveAreaCount = 20;
+
+    private WaveValueAnimation waveValueAnimation;
 
     public WaveSpeechView(Context context) {
         super(context);
@@ -70,6 +74,7 @@ public class WaveSpeechView extends View {
             maxValue = ta.getFloat(R.styleable.WaveSpeechView_ws_waveMaxValue, MAX_VALUE_DEFAULT);
             currentValue = ta.getFloat(R.styleable.WaveSpeechView_ws_waveValue, 0f);
             waveAreaCount = ta.getInt(R.styleable.WaveSpeechView_ws_waveAreaCount, 20);
+            showNothingIfZeroValue = ta.getBoolean(R.styleable.WaveSpeechView_ws_showNoThingIfZeroValue, true);
 
             waveWidth = ta.getDimension(R.styleable.WaveSpeechView_ws_waveWidth, dpToPixel(1));
             wavePadding = ta.getDimension(R.styleable.WaveSpeechView_ws_wavePadding, waveWidth / 2f);
@@ -95,8 +100,11 @@ public class WaveSpeechView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
+    @Synchronized
     @Override
     protected void onDraw(Canvas canvas) {
+        if (showNothingIfZeroValue && currentValue == 0)
+            return;
         float offset = waveWidth / 2f;
         int halfWaveCount = waveCount / 2;
         int partCount = waveCount / waveAreaCount;
@@ -139,9 +147,73 @@ public class WaveSpeechView extends View {
         invalidate();
     }
 
+    public void setValue(float value, float lastValue) {
+        this.lastValue = lastValue;
+        currentValue = value;
+        invalidate();
+    }
+
     public void reset() {
         lastValue = 0;
         currentValue = 0;
         invalidate();
+    }
+
+    public void reset(boolean hasAnimation) {
+        if (hasAnimation) {
+            waveValueAnimation = new WaveValueAnimation(this, currentValue, lastValue, 0f);
+            waveValueAnimation.startAnim();
+        } else {
+            reset();
+        }
+    }
+
+    public void cancelAnimation() {
+        if (waveValueAnimation != null) {
+            waveValueAnimation.cancel();
+            waveValueAnimation = null;
+        }
+    }
+
+
+    static class WaveValueAnimation extends Animation {
+        private WaveSpeechView waveSpeechView;
+        private float oldProgress;
+        private float oldLastProgress;
+        private float newProgress;
+        private float currentProgress = 0F;
+        private float currentLastProgress = 0F;
+
+        public WaveValueAnimation(WaveSpeechView cornerCard, float oldProgress, float oldLastProgress, float newProgress) {
+            this.waveSpeechView = cornerCard;
+            this.oldProgress = oldProgress;
+            this.oldLastProgress = oldLastProgress;
+            this.newProgress = newProgress;
+        }
+
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            float progress = oldProgress + (newProgress - oldProgress) * interpolatedTime;
+            currentProgress = progress;
+            float lastProgress = oldLastProgress + (newProgress - oldLastProgress) * interpolatedTime;
+            currentLastProgress = lastProgress;
+            waveSpeechView.setValue(progress, lastProgress);
+        }
+
+        public void startAnim(long duration) {
+            setDuration(duration);
+            waveSpeechView.startAnimation(this);
+        }
+
+        public void startAnim() {
+            startAnim(1000);
+        }
+
+        @Override
+        public void cancel() {
+            waveSpeechView.setValue(currentProgress, currentLastProgress);
+            super.cancel();
+        }
+
     }
 }

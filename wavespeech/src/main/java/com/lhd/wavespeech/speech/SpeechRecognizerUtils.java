@@ -8,8 +8,11 @@ import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
+import androidx.annotation.NonNull;
+
 import com.lhd.wavespeech.AudioDataReceivedListener;
 import com.lhd.wavespeech.BaseRecord;
+import com.lhd.wavespeech.CustomViewSupport;
 import com.lhd.wavespeech.views.WaveRecordView;
 import com.lhd.wavespeech.views.WaveSpeechView;
 
@@ -29,6 +32,7 @@ public class SpeechRecognizerUtils {
     private boolean isListeningSpeech;
     private BaseRecord baseRecord;
     private WaveRecordView waveRecordView;
+    private Listener listener;
     private AudioDataReceivedListener audioDataReceivedListener = new AudioDataReceivedListener() {
         @Override
         public void onAudioDataReceived(short[] data) {
@@ -37,7 +41,7 @@ public class SpeechRecognizerUtils {
             }
         }
     };
-    private RecognitionListener listener = new RecognitionListener() {
+    private RecognitionListener recognitionListener = new RecognitionListener() {
         @Override
         public void onReadyForSpeech(Bundle bundle) {
             loge("Speech Ready");
@@ -72,25 +76,29 @@ public class SpeechRecognizerUtils {
 
         @Override
         public void onEndOfSpeech() {
-            isListeningSpeech = false;
             loge("Speech End");
-            if (waveSpeechView != null) {
-                waveSpeechView.reset();
-            }
-            if (waveRecordView != null && baseRecord != null) {
-                baseRecord.stop(TEMP_SPEECH_FILE_NAME);
-            }
+            onEndSpeech();
         }
 
         @Override
         public void onError(int i) {
             checkError(i);
+            onEndSpeech();
+            if (listener != null) {
+                listener.onResultSpeech("");
+            }
         }
 
         @Override
         public void onResults(Bundle bundle) {
             List<String> list = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             loge("Speech onResults: ", list);
+            if (listener != null) {
+                if (list == null || list.isEmpty())
+                    listener.onResultSpeech("");
+                else
+                    listener.onResultSpeech(list.get(0));
+            }
         }
 
         @Override
@@ -103,6 +111,19 @@ public class SpeechRecognizerUtils {
 
         }
     };
+
+    private void onEndSpeech() {
+        if (isListeningSpeech) {
+            isListeningSpeech = false;
+            if (waveSpeechView != null) {
+                waveSpeechView.reset(true);
+            }
+            if (waveRecordView != null && baseRecord != null) {
+                baseRecord.stop(TEMP_SPEECH_FILE_NAME);
+            }
+        }
+
+    }
 
     public SpeechRecognizerUtils(Context context) {
         this.context = context;
@@ -117,7 +138,7 @@ public class SpeechRecognizerUtils {
         boolean isSupported;
         if (isGoogleSupported()) {
             mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
-            mSpeechRecognizer.setRecognitionListener(listener);
+            mSpeechRecognizer.setRecognitionListener(recognitionListener);
             mIntentSpeech = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             mIntentSpeech.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
             mIntentSpeech.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
@@ -179,5 +200,17 @@ public class SpeechRecognizerUtils {
                 baseRecord.release();
             }
         }
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    public void enableLog(boolean enable) {
+        CustomViewSupport.ENABLE_LOG = enable;
+    }
+
+    public interface Listener {
+        public void onResultSpeech(@NonNull String result);
     }
 }
