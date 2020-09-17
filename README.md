@@ -1,3 +1,4 @@
+[![](https://jitpack.io/v/ngtien137/WaveSpeechToText.svg)](https://jitpack.io/#ngtien137/WaveSpeechToText)
 # WaveSpeechToText
 Speech to text with wave view
 ## Preview 
@@ -20,4 +21,4 @@ dependencies {
   implementation 'com.github.ngtien137:WaveSpeechToText:Tag'
 }
 ```
-* You can get version of this module [![](https://jitpack.io/v/ngtien137/WaveSpeechToText.svg)](https://jitpack.io/#ngtien137/WaveSpeechToText)
+* You can get version of this module [here](https://jitpack.io/v/ngtien137/WaveSpeechToText.svg)](https://jitpack.io/#ngtien137/WaveSpeechToText)
