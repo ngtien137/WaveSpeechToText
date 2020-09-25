@@ -59,10 +59,22 @@
             android:layout_height="wrap_content"
             android:text="@string/tap_to_talk"
             android:textAllCaps="false"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btnTextToSpeak"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/waveView" />
+
+        <Button
+            android:id="@+id/btnTextToSpeak"
+            debounceClick="@{viewListener::onClick}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/speak_text"
+            android:textAllCaps="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnTalk" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

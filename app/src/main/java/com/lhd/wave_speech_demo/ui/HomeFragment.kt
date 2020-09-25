@@ -3,6 +3,7 @@ package com.lhd.wave_speech_demo.ui
 import com.lhd.wave_speech_demo.R
 import com.lhd.wave_speech_demo.databinding.FragmentHomeBinding
 import com.lhd.wavespeech.speech.SpeechRecognizerUtils
+import com.lhd.wavespeech.speech.TextToSpeechUtils
 
 class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUtils.Listener {
 
@@ -14,6 +15,10 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
         SpeechRecognizerUtils(activity).apply {
             setListener(this@HomeFragment)
         }
+    }
+
+    private val textToSpeechUtils by lazy {
+        TextToSpeechUtils()
     }
 
     override fun initBinding() {
@@ -30,6 +35,9 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
                 activity.grantPermission {
                     doTalkClick()
                 }
+            }
+            R.id.btnTextToSpeak -> {
+                textToSpeechUtils.speak(activity, binding.tvMain.text.toString())
             }
         }
     }
