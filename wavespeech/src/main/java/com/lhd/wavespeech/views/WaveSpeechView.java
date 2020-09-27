@@ -35,6 +35,7 @@ public class WaveSpeechView extends View {
     private float waveHeight;
     private float waveWidth;
     private int waveCount = 0;
+    private float waveStartPadding = 0f;
     //Số vùng sóng
     private int waveAreaCount = 20;
 
@@ -89,15 +90,14 @@ public class WaveSpeechView extends View {
     }
 
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
         if (waveHeight == -1) {
-            waveHeight = heightSize;
+            waveHeight = getHeight();
         }
-        waveCount = (int) ((widthSize + wavePadding) / (waveWidth + wavePadding));
-        rectView.set(0f, 0f, widthSize, heightSize);
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        waveCount = (int) (1f * (getWidth()) / (waveWidth + wavePadding));
+        waveStartPadding = getWidth() - (waveWidth + wavePadding) * waveCount;
+        rectView.set(0f, 0f, getWidth(), getHeight());
     }
 
     @Synchronized
@@ -105,7 +105,7 @@ public class WaveSpeechView extends View {
     protected void onDraw(Canvas canvas) {
         if (showNothingIfZeroValue && currentValue == 0)
             return;
-        float offset = waveWidth / 2f;
+        float offset = waveWidth / 2f + waveStartPadding;
         int halfWaveCount = waveCount / 2;
         int partCount = waveCount / waveAreaCount;
         int lastValuePart = waveCount / 4;
