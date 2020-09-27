@@ -13,12 +13,11 @@ import com.lhd.wavespeech.CustomViewSupport.loge
 import java.util.*
 import kotlin.collections.HashMap
 
-class TextToSpeechUtils {
+class TextToSpeechUtils(private var context: Context) {
 
     //region properties
 
     lateinit var textToSpeech: TextToSpeech
-    lateinit var context: Context
     var liveState = MutableLiveData(State.NOT_READY)
     private val UTTERANCE_ID_FILE = "file"
     private val UTTERANCE_ID_SPEAK = "speak"
@@ -26,8 +25,7 @@ class TextToSpeechUtils {
 
     //endregion
 
-    fun init(context: Context, onSuccess: () -> Unit = {}) {
-        this.context = context
+    fun init(onSuccess: () -> Unit = {}) {
         if (liveState.value != State.NOT_READY) {
             onSuccess()
             return
@@ -111,8 +109,8 @@ class TextToSpeechUtils {
 
     //region action
 
-    fun speak(context: Context, text: String) {
-        init(context) {
+    fun speak(text: String) {
+        init {
             liveState.value = State.SPEAKING
             textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, HashMap<String, String>().apply {
                 put(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_ALARM.toString())
