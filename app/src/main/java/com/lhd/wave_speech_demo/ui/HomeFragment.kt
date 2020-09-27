@@ -21,7 +21,7 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
     }
 
     private val textToSpeechUtils by lazy {
-        TextToSpeechUtils()
+        TextToSpeechUtils(activity)
     }
 
     override fun initBinding() {
@@ -32,6 +32,9 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
         speechRecognizerUtils.setWaveView(binding.waveView)
         observer(textToSpeechUtils.liveState) {
             loge("State: $it")
+        }
+        observer(speechRecognizerUtils.liveListeningSpeech) {
+            loge("Listening: $it")
         }
     }
 
@@ -46,7 +49,7 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
                 if (textToSpeechUtils.isSpeaking()) {
                     textToSpeechUtils.stop()
                 } else {
-                    textToSpeechUtils.speak(activity, binding.tvMain.text.toString())
+                    textToSpeechUtils.speak(binding.tvMain.text.toString())
                 }
             }
         }

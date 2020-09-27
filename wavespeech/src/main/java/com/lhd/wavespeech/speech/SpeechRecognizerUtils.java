@@ -9,6 +9,7 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 
 import com.lhd.wavespeech.AudioDataReceivedListener;
 import com.lhd.wavespeech.BaseRecord;
@@ -29,7 +30,7 @@ public class SpeechRecognizerUtils {
     private Intent mIntentSpeech;
     private boolean isSupported = false;
     private WaveSpeechView waveSpeechView;
-    private boolean isListeningSpeech;
+    private MutableLiveData<Boolean> liveListeningSpeech = new MutableLiveData(false);
     private BaseRecord baseRecord;
     private WaveRecordView waveRecordView;
     private Listener listener;
@@ -50,7 +51,7 @@ public class SpeechRecognizerUtils {
 
         @Override
         public void onBeginningOfSpeech() {
-            isListeningSpeech = true;
+            liveListeningSpeech.setValue(true);
             loge("Speech Begin");
             if (waveRecordView != null) {
                 if (baseRecord == null) {
@@ -65,7 +66,7 @@ public class SpeechRecognizerUtils {
         @Override
         public void onRmsChanged(float v) {
             loge("Speech onRmsChanged: ", v);
-            if (waveSpeechView != null && isListeningSpeech) {
+            if (waveSpeechView != null && liveListeningSpeech.getValue() == true) {
                 waveSpeechView.setValue(v + 10);
             }
         }
@@ -115,8 +116,8 @@ public class SpeechRecognizerUtils {
     };
 
     private void onEndSpeech() {
-        if (isListeningSpeech) {
-            isListeningSpeech = false;
+        if (liveListeningSpeech.getValue() == true) {
+            liveListeningSpeech.setValue(false);
             if (waveSpeechView != null) {
                 waveSpeechView.reset(true);
             }
@@ -176,12 +177,16 @@ public class SpeechRecognizerUtils {
     }
 
     public boolean isListeningSpeech() {
-        return isListeningSpeech;
+        return liveListeningSpeech.getValue();
+    }
+
+    public MutableLiveData<Boolean> getLiveListeningSpeech() {
+        return liveListeningSpeech;
     }
 
     public void startListening() {
         if (mSpeechRecognizer != null && mIntentSpeech != null) {
-            if (!isListeningSpeech)
+            if (!liveListeningSpeech.getValue())
                 mSpeechRecognizer.startListening(mIntentSpeech);
         }
     }
@@ -205,7 +210,7 @@ public class SpeechRecognizerUtils {
     }
 
     public void cancelListener() {
-        if (isListeningSpeech) {
+        if (liveListeningSpeech.getValue()) {
             if (mSpeechRecognizer != null) {
                 mSpeechRecognizer.cancel();
                 mSpeechRecognizer.destroy();
