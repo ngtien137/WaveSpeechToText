@@ -33,6 +33,7 @@ public class SpeechRecognizerUtils {
     private BaseRecord baseRecord;
     private WaveRecordView waveRecordView;
     private Listener listener;
+    private boolean isNeedStartIntentNewTask = false;
     private AudioDataReceivedListener audioDataReceivedListener = new AudioDataReceivedListener() {
         @Override
         public void onAudioDataReceived(short[] data) {
@@ -93,6 +94,7 @@ public class SpeechRecognizerUtils {
         public void onResults(Bundle bundle) {
             List<String> list = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             loge("Speech onResults: ", list);
+            onEndOfSpeech();
             if (listener != null) {
                 if (list == null || list.isEmpty())
                     listener.onResultSpeech("");
@@ -165,6 +167,18 @@ public class SpeechRecognizerUtils {
         this.waveRecordView = waveRecordView;
     }
 
+    public boolean isNeedStartIntentNewTask() {
+        return isNeedStartIntentNewTask;
+    }
+
+    public void setNeedStartIntentNewTask(boolean needStartIntentNewTask) {
+        isNeedStartIntentNewTask = needStartIntentNewTask;
+    }
+
+    public boolean isListeningSpeech() {
+        return isListeningSpeech;
+    }
+
     public void startListening() {
         if (mSpeechRecognizer != null && mIntentSpeech != null) {
             if (!isListeningSpeech)
@@ -211,6 +225,9 @@ public class SpeechRecognizerUtils {
     }
 
     public interface Listener {
-        public void onResultSpeech(@NonNull String result);
+        default public void onStartResultSpeech() {
+        }
+
+        void onResultSpeech(@NonNull String result);
     }
 }

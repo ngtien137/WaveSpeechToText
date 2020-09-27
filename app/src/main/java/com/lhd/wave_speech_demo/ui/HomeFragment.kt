@@ -1,7 +1,10 @@
 package com.lhd.wave_speech_demo.ui
 
+import com.base.baselibrary.utils.observer
+import com.base.baselibrary.views.ext.loge
 import com.lhd.wave_speech_demo.R
 import com.lhd.wave_speech_demo.databinding.FragmentHomeBinding
+import com.lhd.wavespeech.CustomViewSupport
 import com.lhd.wavespeech.speech.SpeechRecognizerUtils
 import com.lhd.wavespeech.speech.TextToSpeechUtils
 
@@ -22,11 +25,14 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
     }
 
     override fun initBinding() {
-
+        CustomViewSupport.ENABLE_LOG = false
     }
 
     override fun initView() {
         speechRecognizerUtils.setWaveView(binding.waveView)
+        observer(textToSpeechUtils.liveState) {
+            loge("State: $it")
+        }
     }
 
     override fun onViewClick(vId: Int) {
@@ -37,7 +43,11 @@ class HomeFragment : BaseMainFragment<FragmentHomeBinding>(), SpeechRecognizerUt
                 }
             }
             R.id.btnTextToSpeak -> {
-                textToSpeechUtils.speak(activity, binding.tvMain.text.toString())
+                if (textToSpeechUtils.isSpeaking()) {
+                    textToSpeechUtils.stop()
+                } else {
+                    textToSpeechUtils.speak(activity, binding.tvMain.text.toString())
+                }
             }
         }
     }
